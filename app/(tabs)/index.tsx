@@ -1,74 +1,134 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { FlashList, type ListRenderItem } from '@shopify/flash-list';
+import { useCallback } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import type { ProductSummary } from '@/src/api/generated/model';
+import { ProductCard } from '@/src/features/products/ProductCard';
+import { useProductList } from '@/src/features/products/useProductList';
 
 export default function HomeScreen() {
+  const {
+    data,
+    error,
+    isPending,
+    isError,
+    isRefetching,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useProductList();
+
+  // onEndReached can fire repeatedly; only one next-page request at a time.
+  const onEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const renderItem = useCallback<ListRenderItem<ProductSummary>>(
+    ({ item, index }) => <ProductCard product={item} column={index % 2 === 0 ? 0 : 1} />,
+    [],
+  );
+
+  let content: React.ReactNode;
+  if (isPending) {
+    content = (
+      <View style={styles.center}>
+        <ActivityIndicator />
+      </View>
+    );
+  } else if (isError && !data) {
+    content = (
+      <View style={styles.center}>
+        <ThemedText type="defaultSemiBold">{error.code}</ThemedText>
+        <ThemedText style={styles.muted}>{error.message}</ThemedText>
+        <Pressable style={styles.retry} onPress={() => refetch()}>
+          <ThemedText>다시 시도</ThemedText>
+        </Pressable>
+      </View>
+    );
+  } else {
+    content = (
+      <FlashList
+        data={data.items}
+        renderItem={renderItem}
+        keyExtractor={(item) => String(item.id)}
+        numColumns={2}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.5}
+        refreshing={isRefetching && !isFetchingNextPage}
+        onRefresh={refetch}
+        ListHeaderComponent={
+          <View style={styles.countBar}>
+            <ThemedText style={styles.count}>{data.total}개 상품</ThemedText>
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={styles.center}>
+            <ThemedText style={styles.muted}>상품이 없습니다.</ThemedText>
+          </View>
+        }
+        ListFooterComponent={
+          isFetchingNextPage ? <ActivityIndicator style={styles.footer} /> : null
+        }
+      />
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ThemedView style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.header}>
+        <ThemedText style={styles.headerTitle}>Shop</ThemedText>
+      </SafeAreaView>
+      {content}
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+  },
+  header: {
     alignItems: 'center',
-    gap: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#8886',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  headerTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '600',
+    paddingVertical: 12,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  countBar: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  count: {
+    fontSize: 15,
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 24,
+  },
+  muted: {
+    color: '#888',
+    fontSize: 14,
+  },
+  retry: {
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#8886',
+    borderRadius: 6,
+  },
+  footer: {
+    paddingVertical: 24,
   },
 });

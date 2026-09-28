@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -12,10 +13,15 @@ type Props = {
 
 // Prices are shown as delivered by the server; no client-side discount math.
 function ProductCardBase({ product, column }: Props) {
+  const router = useRouter();
   const discount = Math.round(product.discountPercentage);
 
   return (
-    <Pressable style={[styles.card, column === 0 ? styles.left : styles.right]}>
+    <Pressable
+      style={[styles.card, column === 0 ? styles.left : styles.right]}
+      onPress={() =>
+        router.push({ pathname: '/product/[id]', params: { id: String(product.id) } })
+      }>
       <Image
         source={product.thumbnail}
         style={styles.image}

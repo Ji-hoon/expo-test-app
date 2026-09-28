@@ -60,11 +60,6 @@ export default function HomeScreen() {
         onEndReachedThreshold={0.5}
         refreshing={isRefetching && !isFetchingNextPage}
         onRefresh={refetch}
-        ListHeaderComponent={
-          <View style={styles.countBar}>
-            <ThemedText style={styles.count}>{data.total}개 상품</ThemedText>
-          </View>
-        }
         ListEmptyComponent={
           <View style={styles.center}>
             <ThemedText style={styles.muted}>상품이 없습니다.</ThemedText>
@@ -82,6 +77,12 @@ export default function HomeScreen() {
       <SafeAreaView edges={['top']} style={styles.header}>
         <ThemedText style={styles.headerTitle}>Shop</ThemedText>
       </SafeAreaView>
+      {/* Outside the list so it stays pinned while items scroll. */}
+      {data ? (
+        <View style={styles.countBar}>
+          <ThemedText style={styles.count}>{data.total}개 상품</ThemedText>
+        </View>
+      ) : null}
       {content}
     </ThemedView>
   );
@@ -105,6 +106,8 @@ const styles = StyleSheet.create({
   countBar: {
     paddingHorizontal: 20,
     paddingVertical: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#8886',
   },
   count: {
     fontSize: 15,

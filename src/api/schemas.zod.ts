@@ -41,3 +41,35 @@ export const listProductsResponse = zod.object({
   "skip": zod.number().min(listProductsResponseSkipMin).max(listProductsResponseSkipMax),
   "limit": zod.number().min(listProductsResponseLimitMin).max(listProductsResponseLimitMax)
 })
+
+
+/**
+ * @summary 상품 상세
+ */
+export const getProductPathIdMax = 9007199254740991;
+
+export const getProductParams = zod.object({
+  "id": zod.number().min(1).max(getProductPathIdMax).describe('Product id')
+})
+
+export const getProductResponseIdMin = -9007199254740991;
+export const getProductResponseIdMax = 9007199254740991;export const getProductResponseStockMin = -9007199254740991;
+export const getProductResponseStockMax = 9007199254740991;
+
+export const getProductResponse = zod.object({
+  "id": zod.number().min(getProductResponseIdMin).max(getProductResponseIdMax),
+  "title": zod.string(),
+  "price": zod.number(),
+  "discountPercentage": zod.number(),
+  "rating": zod.number(),
+  "thumbnail": zod.url(),
+  "brand": zod.string().optional(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "images": zod.array(zod.url()),
+  "stock": zod.number().min(getProductResponseStockMin).max(getProductResponseStockMax),
+  "availabilityStatus": zod.string().optional(),
+  "shippingInformation": zod.string().optional(),
+  "warrantyInformation": zod.string().optional(),
+  "returnPolicy": zod.string().optional()
+})

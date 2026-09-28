@@ -21,6 +21,10 @@ export default defineConfig({
           useInfinite: true,
           useInfiniteQueryParam: 'skip',
         },
+        operations: {
+          // Single resource: no paging, so skip the infinite variant.
+          getProduct: { query: { useInfinite: false } },
+        },
       },
     },
   },

@@ -12,5 +12,6 @@ export type ErrorCode = typeof ErrorCode[keyof typeof ErrorCode];
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ErrorCode = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
+  NOT_FOUND: 'NOT_FOUND',
   UPSTREAM_ERROR: 'UPSTREAM_ERROR',
 } as const;

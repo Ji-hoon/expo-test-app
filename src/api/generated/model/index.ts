@@ -9,5 +9,6 @@
 export * from './errorCode';
 export * from './errorResponse';
 export * from './listProductsParams';
+export * from './productDetail';
 export * from './productListResponse';
 export * from './productSummary';

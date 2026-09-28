@@ -1,8 +1,12 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { DetailTabBar, type DetailTab } from '@/src/features/products/DetailTabBar';
+import { DetailTabContent } from '@/src/features/products/DetailTabContent';
+import { ImageCarousel } from '@/src/features/products/ImageCarousel';
 import { useProduct } from '@/src/features/products/useProduct';
 
 export default function ProductDetailScreen() {
@@ -13,6 +17,9 @@ export default function ProductDetailScreen() {
   const { data: product, error, isPending, isError, refetch } = useProduct(
     validId ? productId : 0,
   );
+  const [tab, setTab] = useState<DetailTab>('info');
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const [tabBarHeight, setTabBarHeight] = useState(0);
 
   let content: React.ReactNode;
   if (!validId || error?.code === 'NOT_FOUND') {
@@ -39,8 +46,20 @@ export default function ProductDetailScreen() {
     );
   } else {
     content = (
-      <ScrollView>
-        <ThemedText style={styles.title}>{product.title}</ThemedText>
+      // Child 1 (tab bar) pins to the top once the carousel scrolls away. Content is at
+      // least as tall as the space under the pinned bar so short tabs can still reach it.
+      <ScrollView
+        stickyHeaderIndices={[1]}
+        onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}>
+        <ImageCarousel images={product.images.length ? product.images : [product.thumbnail]} />
+        <DetailTabBar
+          value={tab}
+          onChange={setTab}
+          onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height)}
+        />
+        <View style={{ minHeight: Math.max(0, viewportHeight - tabBarHeight) }}>
+          <DetailTabContent tab={tab} product={product} />
+        </View>
       </ScrollView>
     );
   }
@@ -75,11 +94,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#8886',
     borderRadius: 6,
-  },
-  title: {
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: '600',
-    padding: 20,
   },
 });

@@ -6,15 +6,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import type { ProductSummary } from '@/src/api/generated/model';
 
+import { PriceRow } from './PriceRow';
+
 type Props = {
   product: ProductSummary;
   column: 0 | 1;
 };
 
-// Prices are shown as delivered by the server; no client-side discount math.
 function ProductCardBase({ product, column }: Props) {
   const router = useRouter();
-  const discount = Math.round(product.discountPercentage);
 
   return (
     <Pressable
@@ -38,14 +38,11 @@ function ProductCardBase({ product, column }: Props) {
             {product.brand}
           </ThemedText>
         ) : null}
-        <View style={styles.priceRow}>
-          {discount > 0 ? (
-            <View style={styles.badge}>
-              <ThemedText style={styles.badgeText}>{discount}%</ThemedText>
-            </View>
-          ) : null}
-          <ThemedText style={styles.price}>${product.price.toFixed(2)}</ThemedText>
-        </View>
+        <PriceRow
+          price={product.price}
+          discountPercentage={product.discountPercentage}
+          style={styles.priceRow}
+        />
       </View>
     </Pressable>
   );
@@ -81,25 +78,6 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     marginTop: 4,
-  },
-  badge: {
-    backgroundColor: '#EF7A92',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 15,
-    lineHeight: 20,
-    fontWeight: '700',
-  },
-  price: {
-    fontSize: 17,
-    lineHeight: 22,
-    fontWeight: '700',
   },
 });

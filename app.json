@@ -2,7 +2,7 @@
   "expo": {
     "name": "expo-test-app",
     "slug": "expo-test-app",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -17,7 +17,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.lans.hc_app",
-      "versionCode": 3
+      "versionCode": 301
     },
     "web": {
       "bundler": "metro",
